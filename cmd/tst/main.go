@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/carzil/mipt-testing-2020/cmd/cli/cmd"
+	"github.com/carzil/mipt-testing-2020/cmd/tst/cmd"
 	_ "github.com/rclone/rclone/backend/alias"
 	_ "github.com/rclone/rclone/backend/amazonclouddrive"
 	_ "github.com/rclone/rclone/backend/azureblob"

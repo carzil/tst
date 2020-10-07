@@ -10,7 +10,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Short: "Backup utility",
+	Short: "Backup utility under the hood using rclone.",
 	Run:   func(cmd *cobra.Command, args []string) {},
 }
 
