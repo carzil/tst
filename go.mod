@@ -1,4 +1,4 @@
-module github.com/carzil/mipt-testing-2020
+module github.com/carzil/tst
 
 go 1.15
 

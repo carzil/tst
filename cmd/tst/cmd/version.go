@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/carzil/mipt-testing-2020/internal"
+	"github.com/carzil/tst/internal"
 	"github.com/rclone/rclone/fs"
 	"github.com/spf13/cobra"
 )

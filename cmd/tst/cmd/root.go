@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/carzil/mipt-testing-2020/internal"
+	"github.com/carzil/tst/internal"
 	"github.com/spf13/cobra"
 )
 
