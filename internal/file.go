@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const chunkSize = 4096
+const chunkSize = 256 * 1024
 
 func FileChunkedChecksums(file *os.File) ([]string, error) {
 	buf := make([]byte, chunkSize)
