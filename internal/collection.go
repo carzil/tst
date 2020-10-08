@@ -82,6 +82,18 @@ func (c Collection) BlobRemoteName(hash string) string {
 }
 
 func (c Collection) restoreObject(ctx context.Context, remoteFs fs.Fs, objectName string, object File) error {
+	dir := filepath.Dir(objectName)
+	info, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			if err := os.Mkdir(dir, 0700); err != nil {
+				return fmt.Errorf("cannot mkdir %s: %s", dir, err)
+			}
+		}
+	} else if !info.IsDir() {
+		return fmt.Errorf("%s is not a directory, but should be", dir)
+	}
+
 	f, err := os.OpenFile(filepath.Join(c.Root, objectName), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0700)
 	if err != nil {
 		return err
