@@ -180,6 +180,97 @@ func (c Collection) RestoreVersion(ctx context.Context, targetVer int, dst strin
 	})
 }
 
+const (
+	StatusDeleted  = 1
+	StatusNew      = 2
+	StatusModified = 3
+)
+
+type ObjectDiff struct {
+	ObjectName string
+	Status     int
+}
+
+func (c Collection) checkObjectModified(object File) (bool, error) {
+	f, err := os.Open(filepath.Join(c.Root, object.Name))
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+	newChunks, err := FileChunkedChecksums(f)
+	if err != nil {
+		return false, err
+	}
+	if len(newChunks) != len(object.Chunks) {
+		return true, nil
+	}
+	for idx, newChunk := range newChunks {
+		if newChunk != object.Chunks[idx] {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (c Collection) Diff(ver Version) ([]ObjectDiff, error) {
+	var diff []ObjectDiff
+	present := make(map[string]struct{})
+	err := filepath.Walk(c.Root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		objectName, err := filepath.Rel(c.Root, path)
+		if err != nil {
+			return err
+		}
+
+		if objectName == ".collection" {
+			return nil
+		}
+
+		object, ok := ver.Files[objectName]
+		if !ok {
+			diff = append(diff, ObjectDiff{
+				Status:     StatusNew,
+				ObjectName: objectName,
+			})
+		} else {
+			present[objectName] = struct{}{}
+			modified, err := c.checkObjectModified(object)
+			if err != nil {
+				return err
+			}
+			if modified {
+				diff = append(diff, ObjectDiff{
+					Status:     StatusModified,
+					ObjectName: objectName,
+				})
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(present) != len(ver.Files) {
+		for objectName := range ver.Files {
+			if _, ok := present[objectName]; !ok {
+				diff = append(diff, ObjectDiff{
+					Status:     StatusDeleted,
+					ObjectName: objectName,
+				})
+			}
+		}
+	}
+	return diff, nil
+}
+
 func openRemote(remoteName string) (fs.Fs, string, error) {
 	_, _, remoteRoot, err := fs.ParseRemote(remoteName)
 	if err != nil {
